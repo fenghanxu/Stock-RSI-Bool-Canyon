@@ -3,4 +3,70 @@
    uuid = "88203E52-9BF4-41A0-9B7B-F3613B5763E5"
    type = "0"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B978E939-B8E4-48AA-8CE7-46D5F48982EF"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Frame/ViewController.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1449"
+            endingLineNumber = "1449"
+            landmarkName = "-special_judge_kLine_7_fall_7:withModel_7:withFall_5:withModel_5:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "824A54B9-480E-4BA8-95EF-8851536B248D"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Frame/ViewController.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1487"
+            endingLineNumber = "1487"
+            landmarkName = "-special_rise_1_rise_3_fall_fall_1:withModel_1:withFall_2:withModel_2:withFall_3:withModel_3:withFall_4:withModel_4:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "14EE8C97-FDC9-435F-A4C1-70D3CFEA1312"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Frame/ViewController.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1538"
+            endingLineNumber = "1538"
+            landmarkName = "-special_rise_2_rise_2_fall_fall_1:withModel_1:withFall_2:withModel_2:withFall_3:withModel_3:withFall_4:withModel_4:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F468A878-D78A-4629-8987-7B76E90DCB7C"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Frame/ViewController.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1583"
+            endingLineNumber = "1583"
+            landmarkName = "-special_rise_3_rise_1_fall_fall_1:withModel_1:withFall_2:withModel_2:withFall_3:withModel_3:withFall_4:withModel_4:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
