@@ -561,6 +561,7 @@ typedef void(^KLineTipModelAction)(KLineModel* tipModel);
     chartView.backgroundColor = [[UIColor grayColor] colorWithAlphaComponent:0.2];
     chartView.visibleKLineData = self.loadedKLineData;
     [self findCanyon];
+    [self backtestByValleyRule];
     
     [self.scrollView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [self.scrollView addSubview:chartView];
@@ -1643,6 +1644,140 @@ typedef void(^KLineTipModelAction)(KLineModel* tipModel);
     model.condition_9 = nil;
 }
 
+- (void)backtestByValleyRule {
+
+    double capital = 1.0;
+
+    BOOL inPosition = NO;
+    KLineModel *entryModel = nil;
+    double entryPrice = 0;
+
+    KLineModel *watchValley = nil;     // 最近关注的低谷
+    KLineModel *lastSellValley = nil;  // 用于卖出的低谷对比
+
+    NSInteger totalTrades = 0;
+    NSInteger winTrades = 0;
+
+    NSInteger loseStreak = 0;
+    NSMutableDictionary<NSNumber *, NSNumber *> *loseStreakStats = @{}.mutableCopy;
+
+    NSMutableArray<NSString *> *logs = @[].mutableCopy;
+
+    for (NSInteger i = 0; i < self.loadedKLineData.count; i++) {
+
+        KLineModel *m = self.loadedKLineData[i];
+        BOOL isValley = [m.mountainPeakTag isEqualToString:@"低谷"] ||
+                        [m.mountainPeakTag isEqualToString:@"特1"] ||
+                        [m.mountainPeakTag isEqualToString:@"特2"] ||
+                        [m.mountainPeakTag isEqualToString:@"特3"] ||
+                        [m.mountainPeakTag isEqualToString:@"特4"];
+
+        // =========================
+        // 无仓位 → 找做空买点
+        // =========================
+        if (!inPosition) {
+
+            if (isValley) {
+                watchValley = m;   // 永远只看最新低谷
+            }
+
+            // 低谷开盘价被突破 → 做空
+            if (watchValley && m.close > watchValley.open) {
+
+                inPosition = YES;
+                entryModel = m;
+                entryPrice = m.close;
+
+                lastSellValley = watchValley;
+                watchValley = nil;
+            }
+        }
+        // =========================
+        // 持仓中 → 找卖点
+        // =========================
+        else {
+
+            if (isValley) {
+
+                // 低谷抬高 → 反弹 → 平空
+                if (m.open > lastSellValley.open) {
+
+                    double exitPrice = m.open;
+                    double pct = (entryPrice - exitPrice) / entryPrice;
+                    capital *= (1.0 + pct);
+
+                    BOOL win = pct > 0;
+                    totalTrades++;
+
+                    if (win) {
+                        winTrades++;
+                        loseStreak = 0;
+                    } else {
+                        loseStreak++;
+                        NSNumber *key = @(loseStreak);
+                        loseStreakStats[key] =
+                            @([loseStreakStats[key] integerValue] + 1);
+                    }
+
+                    NSString *log = [NSString stringWithFormat:
+                        @"做空 | 买入时间 %@ | 卖出时间 %@ | 买入价 %.6f | 卖出价 %.6f | %@ | 盈利 %.3f%%",
+                        [self timeString:entryModel.timestamp],
+                        [self timeString:m.timestamp],
+                        entryPrice,
+                        exitPrice,
+                        win ? @"WIN" : @"LOSE",
+                        pct * 100.0
+                    ];
+                    [logs addObject:log];
+
+                    // 清仓
+                    inPosition = NO;
+                    entryModel = nil;
+                    lastSellValley = nil;
+                }
+                else {
+                    // 低谷更低 → 继续持仓
+                    lastSellValley = m;
+                }
+            }
+        }
+    }
+
+    // =========================
+    // 打印逐笔日志
+    // =========================
+    for (NSString *l in logs) {
+        NSLog(@"%@", l);
+    }
+
+    double winRate = totalTrades > 0 ? (double)winTrades / totalTrades * 100.0 : 0;
+    double avgReturn = totalTrades > 0 ?
+        ((capital - 1.0) / totalTrades) * 100.0 : 0;
+
+    NSLog(@"\n============================");
+    NSLog(@"===== 固定参数回测结果 =====");
+    NSLog(@"============================");
+    NSLog(@"最终资金乘数(起始资金为1) = %.6f", capital);
+    NSLog(@"交易笔数 = %ld", (long)totalTrades);
+    NSLog(@"获利笔数 = %ld", (long)winTrades);
+    NSLog(@"胜率 = %.2f%%", winRate);
+    NSLog(@"平均每笔回报（%%） = %.4f%%", avgReturn);
+
+    NSLog(@"\n========== 连败统计（1..12） ==========");
+    for (NSInteger i = 1; i <= 12; i++) {
+        NSLog(@"连输%ld: %@", (long)i, loseStreakStats[@(i)] ?: @0);
+    }
+}
+
+- (NSString *)timeString:(NSTimeInterval)ts {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:ts];
+    NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
+    fmt.dateFormat = @"yyyy-MM-dd HH:mm";
+    return [fmt stringFromDate:date];
+}
+
+
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     self.chartView.contentOffsetX = scrollView.contentOffset.x;
     
@@ -1672,6 +1807,7 @@ typedef void(^KLineTipModelAction)(KLineModel* tipModel);
             // 更新图表
             self.chartView.visibleKLineData = self.loadedKLineData;
             [self findCanyon];
+            [self backtestByValleyRule];
             CGFloat newWidth = self.loadedKLineData.count * candleFullWidth;
             self.chartView.frame = CGRectMake(0, self.chartView.frame.origin.y, newWidth, self.chartView.frame.size.height);
             self.scrollView.contentSize = CGSizeMake(newWidth, self.scrollView.contentSize.height);
@@ -1697,6 +1833,7 @@ typedef void(^KLineTipModelAction)(KLineModel* tipModel);
             // 更新图表
             self.chartView.visibleKLineData = self.loadedKLineData;
             [self findCanyon];
+            [self backtestByValleyRule];
             CGFloat newWidth = self.loadedKLineData.count * candleFullWidth;
             self.chartView.frame = CGRectMake(0, self.chartView.frame.origin.y, newWidth, self.chartView.frame.size.height);
             self.scrollView.contentSize = CGSizeMake(newWidth, self.scrollView.contentSize.height);
@@ -1711,4 +1848,5 @@ typedef void(^KLineTipModelAction)(KLineModel* tipModel);
 }
 
 @end
+
 
